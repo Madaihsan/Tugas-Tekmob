@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:zooplay/models/animal.dart';
-import 'package:zooplay/screens/learn_page.dart'; // Import halaman belajar
-import 'package:zooplay/screens/play_page.dart';   // Import halaman bermain
+import 'package:zooplay/screens/learn_page.dart';
+import 'package:zooplay/screens/play_page.dart';
+import 'package:animate_do/animate_do.dart'; // Untuk animasi FadeIn, BounceIn
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,22 +11,54 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Future<AnimalData> _animalDataFuture;
-  AnimalData? _loadedAnimalData; // Tambahkan variabel untuk menyimpan data setelah dimuat
+  AnimalData? _loadedAnimalData;
+
+  late AnimationController _titlePulseController;
+  late Animation<double> _titlePulse;
+
+  late AnimationController _floatController;
+  late Animation<double> _floatAnim;
 
   @override
   void initState() {
     super.initState();
+
     _animalDataFuture = AnimalData.loadFromJsonAsset('assets/data/hewan.json').then((data) {
-      _loadedAnimalData = data; // Simpan data setelah berhasil dimuat
+      _loadedAnimalData = data;
       return data;
     });
+
+    // Judul: Membesar & mengecil
+    _titlePulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    _titlePulse = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(parent: _titlePulseController, curve: Curves.easeInOut),
+    );
+
+    // Tombol: Floating naik turun
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    _floatAnim = Tween<double>(begin: -8, end: 8).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _titlePulseController.dispose();
+    _floatController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
+    final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
       body: Stack(
@@ -40,9 +73,7 @@ class _HomePageState extends State<HomePage> {
             future: _animalDataFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+                return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
                 return Center(
                   child: Text(
@@ -51,78 +82,91 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
               } else if (snapshot.hasData) {
-                // Pastikan data sudah tersedia sebelum navigasi
-                // snapshot.data sudah pasti tidak null di sini karena ada hasData
-                // _loadedAnimalData juga sudah terisi dari .then() di initState
-
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        'ZOO PLAY',
-                        style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 10.0,
-                              color: Colors.black,
-                              offset: Offset(3.0, 3.0),
-                            ),
-                          ],
+                      // Judul gambar dengan animasi FadeInDown + Pulse loop
+                      FadeInDown(
+                        duration: const Duration(milliseconds: 1200),
+                        child: ScaleTransition(
+                          scale: _titlePulse,
+                          child: Image.asset(
+                            'assets/icon/judul.png',
+                            width: screenSize.width * 0.8, // Lebih besar
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 60),
 
-                      // Tombol "Belajar"
-                      GestureDetector(
-                        onTap: () {
-                          // Navigasi ke LearnPage dan teruskan data hewan
-                          if (_loadedAnimalData != null) { // Pastikan data sudah dimuat
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => LearnPage(animalData: _loadedAnimalData!),
+                      // Tombol BELAJAR: BounceInUp + Floating
+                      BounceInUp(
+                        duration: const Duration(milliseconds: 1500),
+                        child: AnimatedBuilder(
+                          animation: _floatAnim,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _floatAnim.value),
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_loadedAnimalData != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            LearnPage(animalData: _loadedAnimalData!),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Image.asset(
+                                  'assets/icon/icon_belajar.png',
+                                  width: screenSize.width * 0.65, // Perbesar
+                                  fit: BoxFit.contain,
+                                ),
                               ),
                             );
-                          }
-                        },
-                        child: Image.asset(
-                          'assets/icon/icon_belajar.png',
-                          width: screenSize.width * 0.6,
-                          fit: BoxFit.contain,
+                          },
                         ),
                       ),
                       const SizedBox(height: 30),
 
-                      // Tombol "Bermain"
-                      GestureDetector(
-                        onTap: () {
-                          // Navigasi ke PlayPage dan teruskan data hewan
-                          if (_loadedAnimalData != null) { // Pastikan data sudah dimuat
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PlayPage(animalData: _loadedAnimalData!),
+                      // Tombol BERMAIN: BounceInUp + Floating (arah berlawanan)
+                      BounceInUp(
+                        duration: const Duration(milliseconds: 1800),
+                        child: AnimatedBuilder(
+                          animation: _floatAnim,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, -_floatAnim.value),
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_loadedAnimalData != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            PlayPage(animalData: _loadedAnimalData!),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Image.asset(
+                                  'assets/icon/icon_bermain.png',
+                                  width: screenSize.width * 0.65,
+                                  fit: BoxFit.contain,
+                                ),
                               ),
                             );
-                          }
-                        },
-                        child: Image.asset(
-                          'assets/icon/icon_bermain.png',
-                          width: screenSize.width * 0.6,
-                          fit: BoxFit.contain,
+                          },
                         ),
                       ),
                     ],
                   ),
                 );
               } else {
-                return const Center(
-                  child: Text('Tidak ada data.'),
-                );
+                return const Center(child: Text('Tidak ada data.'));
               }
             },
           ),
