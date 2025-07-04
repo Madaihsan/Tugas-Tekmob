@@ -1,8 +1,13 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:zooplay/models/animal.dart';
+import 'package:zooplay/models/user_profile.dart';
 import 'package:zooplay/screens/learn_page.dart';
 import 'package:zooplay/screens/play_page.dart';
-import 'package:animate_do/animate_do.dart'; // Untuk animasi FadeIn, BounceIn
+import 'package:zooplay/screens/profile_page.dart';
+import 'package:zooplay/services/user_profile_storage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,10 +19,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Future<AnimalData> _animalDataFuture;
   AnimalData? _loadedAnimalData;
+  UserProfile? _userProfile;
 
   late AnimationController _titlePulseController;
   late Animation<double> _titlePulse;
-
   late AnimationController _floatController;
   late Animation<double> _floatAnim;
 
@@ -30,23 +35,32 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       return data;
     });
 
-    // Judul: Membesar & mengecil
+    _loadUserProfile();
+
     _titlePulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+
     _titlePulse = Tween<double>(begin: 0.95, end: 1.05).animate(
       CurvedAnimation(parent: _titlePulseController, curve: Curves.easeInOut),
     );
 
-    // Tombol: Floating naik turun
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+
     _floatAnim = Tween<double>(begin: -8, end: 8).animate(
       CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
     );
+  }
+
+  Future<void> _loadUserProfile() async {
+    final profile = await UserProfileStorage.loadProfile();
+    setState(() {
+      _userProfile = profile;
+    });
   }
 
   @override
@@ -61,14 +75,36 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
+      extendBodyBehindAppBar: true, // Allows content to go behind the app bar
       body: Stack(
         children: [
+          // Background
           Positioned.fill(
             child: Image.asset(
               'assets/icon/background_home.jpg',
               fit: BoxFit.cover,
             ),
           ),
+          // Gradient Overlay to make text/buttons more readable
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.2),
+                    Colors.black.withOpacity(0.4),
+                    Colors.black.withOpacity(0.6),
+                    Colors.black.withOpacity(0.8),
+                  ],
+                  stops: const [0.0, 0.4, 0.7, 1.0],
+                ),
+              ),
+            ),
+          ),
+
+          // Main content
           FutureBuilder<AnimalData>(
             future: _animalDataFuture,
             builder: (context, snapshot) {
@@ -86,21 +122,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Judul gambar dengan animasi FadeInDown + Pulse loop
+                      // Judul
                       FadeInDown(
                         duration: const Duration(milliseconds: 1200),
                         child: ScaleTransition(
                           scale: _titlePulse,
                           child: Image.asset(
                             'assets/icon/judul.png',
-                            width: screenSize.width * 0.8, // Lebih besar
+                            width: screenSize.width * 0.75,
                             fit: BoxFit.contain,
                           ),
                         ),
                       ),
                       const SizedBox(height: 60),
 
-                      // Tombol BELAJAR: BounceInUp + Floating
+                      // Tombol Belajar
                       BounceInUp(
                         duration: const Duration(milliseconds: 1500),
                         child: AnimatedBuilder(
@@ -114,7 +150,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) =>
+                                        builder: (_) =>
                                             LearnPage(animalData: _loadedAnimalData!),
                                       ),
                                     );
@@ -122,8 +158,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 },
                                 child: Image.asset(
                                   'assets/icon/icon_belajar.png',
-                                  width: screenSize.width * 0.65, // Perbesar
-                                  fit: BoxFit.contain,
+                                  width: screenSize.width * 0.6,
                                 ),
                               ),
                             );
@@ -132,7 +167,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 30),
 
-                      // Tombol BERMAIN: BounceInUp + Floating (arah berlawanan)
+                      // Tombol Bermain
                       BounceInUp(
                         duration: const Duration(milliseconds: 1800),
                         child: AnimatedBuilder(
@@ -146,7 +181,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) =>
+                                        builder: (_) =>
                                             PlayPage(animalData: _loadedAnimalData!),
                                       ),
                                     );
@@ -154,8 +189,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 },
                                 child: Image.asset(
                                   'assets/icon/icon_bermain.png',
-                                  width: screenSize.width * 0.65,
-                                  fit: BoxFit.contain,
+                                  width: screenSize.width * 0.6,
                                 ),
                               ),
                             );
@@ -171,6 +205,65 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             },
           ),
         ],
+      ),
+      // Bottom Navigation Bar
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.blue.withOpacity(0.8), // Semi-transparent blue
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.home, color: Colors.white, size: 30),
+              onPressed: () {
+                // Already on home page
+              },
+            ),
+            // Placeholder for potential other buttons
+            const SizedBox(width: 48), // The space for the FAB
+            GestureDetector(
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfilePage()),
+                );
+                _loadUserProfile(); // Refresh after returning
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: _userProfile?.avatarPath != null
+                        ? AssetImage(_userProfile!.avatarPath)
+                        : const AssetImage('assets/icon/ikon_profil1.png'),
+                  ),
+                  if (_userProfile?.name != null && _userProfile!.name.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        _userProfile!.name,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          shadows: [Shadow(blurRadius: 2, color: Colors.black)],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Action for the central button, e.g., quick play or info
+        },
+        backgroundColor: Colors.amber,
+        child: const Icon(Icons.star, color: Colors.white, size: 30),
       ),
     );
   }
