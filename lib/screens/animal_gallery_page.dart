@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:zooplay/models/animal.dart';
-import 'dart:developer' as developer; // Impor untuk logging yang lebih baik
+import 'dart:developer' as developer;
 
 class AnimalGalleryPage extends StatefulWidget {
   final String categoryTitle;
   final List<Animal> animals;
 
   const AnimalGalleryPage({
-    super.key, // Memberikan key ke super constructor
+    super.key,
     required this.categoryTitle,
     required this.animals,
   });
@@ -27,39 +27,45 @@ class _AnimalGalleryPageState extends State<AnimalGalleryPage> {
   }
 
   Future<void> _playAnimalSound(String soundPath, String soundNamePath) async {
-    developer.log('Attempting to play sound name: $soundNamePath', name: 'AudioDebug');
-    developer.log('Attempting to play animal sound: $soundPath', name: 'AudioDebug');
+    developer.log('Attempting to play sound name (original): $soundNamePath', name: 'AudioDebug');
+    developer.log('Attempting to play animal sound (original): $soundPath', name: 'AudioDebug');
 
-    await _audioPlayer.stop(); // Hentikan suara sebelumnya
+    // **Perubahan di sini:** Hapus prefiks 'assets/' dari path
+    final String cleanedSoundNamePath = soundNamePath.replaceFirst('assets/', '');
+    final String cleanedSoundPath = soundPath.replaceFirst('assets/', '');
+
+    developer.log('Attempting to play sound name (cleaned): $cleanedSoundNamePath', name: 'AudioDebug');
+    developer.log('Attempting to play animal sound (cleaned): $cleanedSoundPath', name: 'AudioDebug');
+
+
+    await _audioPlayer.stop();
 
     try {
       // Putar suara nama hewan terlebih dahulu
-      await _audioPlayer.play(AssetSource(soundNamePath));
-      developer.log('Played sound name: $soundNamePath', name: 'AudioDebug');
+      await _audioPlayer.play(AssetSource(cleanedSoundNamePath));
+      developer.log('Played sound name: $cleanedSoundNamePath', name: 'AudioDebug');
 
       // Tunggu hingga suara nama hewan selesai diputar
-      await _audioPlayer.onPlayerComplete.first; // Tunggu hingga selesai
+      await _audioPlayer.onPlayerComplete.first;
 
       // Jika ada suara hewan (tidak kosong), putar suara hewan
-      if (soundPath.isNotEmpty) {
-        await _audioPlayer.play(AssetSource(soundPath));
-        developer.log('Played animal sound: $soundPath', name: 'AudioDebug');
+      if (cleanedSoundPath.isNotEmpty) {
+        await _audioPlayer.play(AssetSource(cleanedSoundPath));
+        developer.log('Played animal sound: $cleanedSoundPath', name: 'AudioDebug');
       } else {
         developer.log('Animal sound path is empty, skipping.', name: 'AudioDebug');
       }
-    } catch (e, stackTrace) { // Menangkap semua jenis Exception dan stackTrace-nya
-      // Periksa apakah widget masih mounted sebelum menggunakan context
+    } catch (e, stackTrace) {
       if (!mounted) {
         developer.log('Widget is not mounted, cannot show SnackBar.', name: 'AudioError');
-        return; // Hentikan eksekusi jika widget sudah di-dispose
+        return;
       }
 
       developer.log('Error playing audio: $e', name: 'AudioError', error: e, stackTrace: stackTrace);
       
-      // Tampilkan SnackBar ke pengguna jika audio gagal diputar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Gagal memutar audio: ${e.toString().split(':')[0]}'), // Tampilkan bagian awal error
+          content: Text('Gagal memutar audio: ${e.toString().split(':')[0]}'),
           backgroundColor: Colors.red,
         ),
       );
@@ -101,8 +107,6 @@ class _AnimalGalleryPageState extends State<AnimalGalleryPage> {
           itemBuilder: (context, index) {
             final Animal animal = widget.animals[index];
             return _AnimatedAnimalCard(
-              // Pastikan key unik untuk setiap item jika item list bisa berubah atau dihapus
-              // ValueKey(animal.nama) adalah pilihan yang baik untuk ini
               key: ValueKey(animal.nama),
               animal: animal,
               onTap: () => _playAnimalSound(animal.suara, animal.suaraNama),
@@ -120,7 +124,7 @@ class _AnimatedAnimalCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const _AnimatedAnimalCard({
-    super.key, // Memastikan key diteruskan ke super constructor
+    super.key,
     required this.animal,
     required this.onTap,
   });
