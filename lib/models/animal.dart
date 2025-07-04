@@ -1,5 +1,5 @@
-import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle; // Import ini perlu ditambahkan
+import 'dart:convert'; // Diperlukan untuk jsonDecode
+import 'package:flutter/services.dart' show rootBundle; // Diperlukan untuk memuat aset
 
 /// Model untuk merepresentasikan data satu hewan.
 class Animal {
@@ -65,5 +65,10 @@ class AnimalData {
     final data = jsonDecode(response) as Map<String, dynamic>;
     // Membuat objek AnimalData dari Map yang dihasilkan
     return AnimalData.fromJson(data);
+  }
+
+  /// Getter untuk mendapatkan daftar gabungan dari semua hewan (darat, air, udara).
+  List<Animal> get allAnimals {
+    return [...darat, ...air, ...udara]; // Menggabungkan semua list menjadi satu
   }
 }
