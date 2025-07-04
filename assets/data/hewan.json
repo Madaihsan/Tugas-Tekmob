@@ -1,0 +1,62 @@
+{
+  "darat": [
+    {
+      "nama": "Gajah",
+      "gambar": "assets/images/darat/gambar_gajah.png",
+      "suara": "assets/sounds/darat/sound_gajah.mp3",
+      "suara_nama": "assets/sounds/darat/suara_nama_gajah.mp3"
+    },
+    {
+      "nama": "Kucing",
+      "gambar": "assets/images/darat/gambar_kucing.png",
+      "suara": "assets/sounds/darat/sound_kucing.mp3",
+      "suara_nama": "assets/sounds/darat/suara_nama_kucing.mp3"
+    },
+    {
+      "nama": "Kuda",
+      "gambar": "assets/images/darat/gambar_kuda.png",
+      "suara": "assets/sounds/darat/sound_kuda.mp3",
+      "suara_nama": "assets/sounds/darat/suara_nama_kuda.mp3"
+    }
+  ],
+  "air": [
+    {
+      "nama": "Anjing Laut",
+      "gambar": "assets/images/air/gambar_anjinglaut.png",
+      "suara": "",
+      "suara_nama": "assets/sounds/air/suara_nama_anjinglaut.mp3"
+    },
+    {
+      "nama": "Cacing Laut",
+      "gambar": "assets/images/air/gambar_cacinglaut.png",
+      "suara": "",
+      "suara_nama": "assets/sounds/air/suara_nama_cacinglaut.mp3"
+    },
+    {
+      "nama": "Ikan Pari",
+      "gambar": "assets/images/air/gambar_ikanpari.png",
+      "suara": "",
+      "suara_nama": "assets/sounds/air/suara_nama_ikanpari.mp3"
+    }
+  ],
+  "udara": [
+    {
+      "nama": "Beo",
+      "gambar": "assets/images/udara/gambar_beo.png",
+      "suara": "assets/sounds/udara/sound_beo.mp3",
+      "suara_nama": "assets/sounds/udara/suara_nama_beo.mp3"
+    },
+    {
+      "nama": "Burung Hantu",
+      "gambar": "assets/images/udara/gambar_burunghantu.png",
+      "suara": "assets/sounds/udara/sound_burunghantu.mp3",
+      "suara_nama": "assets/sounds/udara/suara_nama_burunghantu.mp3"
+    },
+    {
+      "nama": "Lalat",
+      "gambar": "assets/images/udara/gambar_lalat.png",
+      "suara": "assets/sounds/udara/sound_lalat.mp3",
+      "suara_nama": "assets/sounds/udara/suara_nama_lalat.mp3"
+    }
+  ]
+}
