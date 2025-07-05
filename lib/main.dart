@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // Tambahkan ini untuk menghilangkan tulisan DEBUG
       title: 'Zooplay', // Nama aplikasi
       theme: ThemeData(
         primarySwatch: Colors.blue, // Tema warna dasar aplikasi

@@ -83,7 +83,7 @@ class _GuessNameGamePageState extends State<GuessNameGamePage> {
     if (_questionAnimals.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Tebak Nama Hewan'),
+          title: const Text('Tebak Nama'),
           backgroundColor: Colors.orange,
           centerTitle: true,
         ),

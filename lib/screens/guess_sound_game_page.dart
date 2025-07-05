@@ -125,7 +125,7 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
     if (_questionAnimals.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Tebak Suara Hewan'),
+          title: const Text('Tebak Suara'),
           backgroundColor: Colors.orange,
           centerTitle: true,
         ),

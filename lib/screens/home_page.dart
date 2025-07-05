@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:zooplay/models/animal.dart';
@@ -75,7 +73,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      extendBodyBehindAppBar: true, // Allows content to go behind the app bar
       body: Stack(
         children: [
           // Background
@@ -85,21 +82,40 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               fit: BoxFit.cover,
             ),
           ),
-          // Gradient Overlay to make text/buttons more readable
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.2),
-                    Colors.black.withOpacity(0.4),
-                    Colors.black.withOpacity(0.6),
-                    Colors.black.withOpacity(0.8),
-                  ],
-                  stops: const [0.0, 0.4, 0.7, 1.0],
-                ),
+
+          // Profil avatar kanan atas
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 12,
+            right: 16,
+            child: GestureDetector(
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfilePage()),
+                );
+                _loadUserProfile(); // Refresh setelah kembali
+              },
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundImage: _userProfile?.avatarPath != null
+                        ? AssetImage(_userProfile!.avatarPath)
+                        : const AssetImage('assets/icon/ikon_profil1.png'),
+                  ),
+                  if (_userProfile?.name != null && _userProfile!.name.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        _userProfile!.name,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          shadows: [Shadow(blurRadius: 3, color: Colors.black)],
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -205,65 +221,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             },
           ),
         ],
-      ),
-      // Bottom Navigation Bar
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.blue.withOpacity(0.8), // Semi-transparent blue
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.home, color: Colors.white, size: 30),
-              onPressed: () {
-                // Already on home page
-              },
-            ),
-            // Placeholder for potential other buttons
-            const SizedBox(width: 48), // The space for the FAB
-            GestureDetector(
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfilePage()),
-                );
-                _loadUserProfile(); // Refresh after returning
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundImage: _userProfile?.avatarPath != null
-                        ? AssetImage(_userProfile!.avatarPath)
-                        : const AssetImage('assets/icon/ikon_profil1.png'),
-                  ),
-                  if (_userProfile?.name != null && _userProfile!.name.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        _userProfile!.name,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                          shadows: [Shadow(blurRadius: 2, color: Colors.black)],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Action for the central button, e.g., quick play or info
-        },
-        backgroundColor: Colors.amber,
-        child: const Icon(Icons.star, color: Colors.white, size: 30),
       ),
     );
   }
