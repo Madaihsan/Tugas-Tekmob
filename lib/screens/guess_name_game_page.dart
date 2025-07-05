@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'dart:math';
+import 'dart:developer' as developer;
 import 'package:zooplay/models/animal.dart';
-import 'dart:math'; // Untuk fungsi random
-import 'dart:developer' as developer; // Untuk logging
 
 class GuessNameGamePage extends StatefulWidget {
   final List<Animal> animals;
@@ -13,87 +14,155 @@ class GuessNameGamePage extends StatefulWidget {
 }
 
 class _GuessNameGamePageState extends State<GuessNameGamePage> {
-  List<Animal> _questionAnimals = []; // Hewan untuk pilihan jawaban
-  late Animal _correctAnimal; // Hewan yang benar
-  String? _selectedAnswerAnimalName; // Nama hewan yang dipilih pengguna
-  bool _isAnswered = false; // Status apakah pertanyaan sudah dijawab
-  // Variabel _feedbackColor dihapus karena tidak digunakan dan logikanya sudah dihandle langsung di itemBuilder
+  final AudioPlayer _voicePlayer = AudioPlayer();
+  final AudioPlayer _feedbackPlayer = AudioPlayer();
+
+  List<Animal> _questionAnimals = [];
+  late Animal _correctAnimal;
+  String? _selectedAnswerAnimalName;
+  bool _isAnswered = false;
+
+  int _currentQuestion = 0;
+  int _scoreCorrect = 0;
 
   @override
   void initState() {
     super.initState();
+    _voicePlayer.setReleaseMode(ReleaseMode.stop);
+    _feedbackPlayer.setReleaseMode(ReleaseMode.stop);
     _startNewRound();
   }
 
+  @override
+  void dispose() {
+    _voicePlayer.dispose();
+    _feedbackPlayer.dispose();
+    super.dispose();
+  }
+
   void _startNewRound() {
-    if (!mounted) return; // Pastikan widget masih aktif sebelum update state
+    if (_currentQuestion >= 5) {
+      _showResultDialog();
+      return;
+    }
+
     setState(() {
       _selectedAnswerAnimalName = null;
       _isAnswered = false;
-      // _feedbackColor = null; // Ini juga tidak diperlukan lagi
 
-      if (widget.animals.isEmpty) {
-        developer.log('No animals found to start game.', name: 'GameError');
-        // Anda bisa tambahkan logika untuk menampilkan pesan atau kembali jika tidak ada hewan
-        return;
-      }
-
-      // Pilih hewan yang benar secara acak
       _correctAnimal = widget.animals[Random().nextInt(widget.animals.length)];
 
-      // Pilih 3 hewan lain sebagai pilihan jawaban (total 4 pilihan)
-      // Filter hewan yang namanya tidak sama dengan hewan yang benar
       List<Animal> otherAnimals = widget.animals
           .where((animal) => animal.nama != _correctAnimal.nama)
-          .toList();
-      
-      // Acak otherAnimals agar pilihan pengecoh bervariasi
-      otherAnimals.shuffle(Random());
-      
-      _questionAnimals = [_correctAnimal]; // Tambahkan hewan yang benar ke pilihan
-      // Tambahkan hingga 3 hewan pengecoh, atau kurang jika tidak cukup
+          .toList()
+        ..shuffle();
+
+      _questionAnimals = [_correctAnimal];
       for (int i = 0; i < 3 && i < otherAnimals.length; i++) {
         _questionAnimals.add(otherAnimals[i]);
       }
-      
-      _questionAnimals.shuffle(Random()); // Acak urutan pilihan jawaban akhir
+
+      _questionAnimals.shuffle();
     });
   }
 
-  void _checkAnswer(String selectedAnimalName) {
-    if (_isAnswered) return; // Jangan izinkan menjawab lagi jika sudah dijawab
+  Future<void> _playSound(String path) async {
+    try {
+      if (path.isEmpty) return;
+      final cleaned = path.replaceFirst('assets/', '');
+      await _voicePlayer.stop();
+      await _voicePlayer.play(AssetSource(cleaned));
+    } catch (e) {
+      developer.log('Gagal memutar suara: $e', name: 'GuessNameGamePage');
+    }
+  }
+
+  Future<void> _playFeedback(bool isCorrect) async {
+    final sounds = isCorrect
+        ? ['soundtrack/benar_keren.mp3', 'soundtrack/benar_luarbiasa.mp3', 'soundtrack/benar_hebat.mp3']
+        : ['soundtrack/salah_salahbubuub.mp3', 'soundtrack/salah_belajarlagiya.mp3'];
+    final sound = (sounds..shuffle()).first;
+
+    try {
+      await _feedbackPlayer.stop();
+      await _feedbackPlayer.play(AssetSource(sound));
+    } catch (e) {
+      developer.log('Gagal memutar feedback: $e', name: 'GuessNameGamePage');
+    }
+  }
+
+  void _checkAnswer(Animal selectedAnimal) async {
+    if (_isAnswered) return;
 
     setState(() {
-      _selectedAnswerAnimalName = selectedAnimalName;
+      _selectedAnswerAnimalName = selectedAnimal.nama;
       _isAnswered = true;
-      // Logika _feedbackColor sudah dihandle langsung di builder Card berdasarkan _selectedAnswerAnimalName dan _correctAnimal.nama
     });
 
-    // Beri sedikit jeda lalu mulai ronde baru
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) { // Periksa mounted sebelum update state setelah async gap
-        _startNewRound();
-      }
-    });
+    await _playSound(selectedAnimal.suaraNama);
+    await Future.delayed(const Duration(milliseconds: 1200));
+    bool isCorrect = selectedAnimal.nama == _correctAnimal.nama;
+    if (isCorrect) _scoreCorrect++;
+
+    await _playFeedback(isCorrect);
+
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      setState(() {
+        _currentQuestion++;
+      });
+      _startNewRound();
+    }
+  }
+
+  void _showResultDialog() {
+    int wrong = 5 - _scoreCorrect;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text('Hasil Permainan'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Total Soal: 5'),
+            Text('Jawaban Benar: $_scoreCorrect'),
+            Text('Jawaban Salah: $wrong'),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton(
+                  icon: Image.asset('assets/icon/ikon_home.png', width: 50),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Tutup dialog
+                    Navigator.of(context).pop(); // Kembali ke home
+                  },
+                ),
+                IconButton(
+                  icon: Image.asset('assets/icon/ikon_play.png', width: 50),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    setState(() {
+                      _scoreCorrect = 0;
+                      _currentQuestion = 0;
+                    });
+                    _startNewRound();
+                  },
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Tampilkan pesan jika tidak ada hewan yang tersedia untuk permainan
     if (_questionAnimals.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Tebak Nama'),
-          backgroundColor: Colors.orange,
-          centerTitle: true,
-        ),
-        body: const Center(
-          child: Text(
-            'Tidak ada hewan yang tersedia untuk permainan ini.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, color: Colors.grey),
-          ),
-        ),
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -116,73 +185,65 @@ class _GuessNameGamePageState extends State<GuessNameGamePage> {
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Image.asset(
-                _correctAnimal.gambar, // Tampilkan gambar hewan yang benar
-                height: 180, // Sesuaikan ukuran gambar agar tidak terlalu besar
-                fit: BoxFit.contain,
+                _correctAnimal.gambar,
+                height: 180,
               ),
             ),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              padding: EdgeInsets.all(10.0),
               child: Text(
                 'Nama hewan apa ini?',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  shadows: [ // Efek bayangan pada teks agar lebih menonjol
-                    Shadow(blurRadius: 5.0, color: Colors.black, offset: Offset(2.0, 2.0)),
-                  ],
+                  shadows: [Shadow(blurRadius: 5.0, color: Colors.black, offset: Offset(2.0, 2.0))],
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 30), // Spasi vertikal
-
-            // Pilihan jawaban dalam GridView (teks nama hewan)
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.all(15),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // 2 kolom
-                  crossAxisSpacing: 15, // Spasi horizontal antar item
-                  mainAxisSpacing: 15, // Spasi vertikal antar item
-                  childAspectRatio: 2.5, // Rasio aspek untuk tombol teks (lebih lebar dari tinggi)
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 15,
+                  crossAxisSpacing: 15,
+                  childAspectRatio: 2.5,
                 ),
                 itemCount: _questionAnimals.length,
                 itemBuilder: (context, index) {
                   final animal = _questionAnimals[index];
                   final isSelected = _selectedAnswerAnimalName == animal.nama;
-                  
-                  // Logika untuk menentukan warna Card
-                  Color cardColor = Colors.white; // Warna default
-                  if (_isAnswered) { // Jika sudah dijawab
+
+                  Color cardColor = Colors.white;
+                  if (_isAnswered) {
                     if (animal.nama == _correctAnimal.nama) {
-                      cardColor = Colors.green.shade300; // Jawaban benar -> hijau
+                      cardColor = Colors.green.shade300;
                     } else if (isSelected) {
-                      cardColor = Colors.red.shade300; // Jawaban salah yang dipilih -> merah
+                      cardColor = Colors.red.shade300;
                     }
-                  } else if (isSelected) { // Jika sedang dipilih tapi belum dijawab
-                    cardColor = Colors.blue.shade100; // Highlight pilihan
+                  } else if (isSelected) {
+                    cardColor = Colors.blue.shade100;
                   }
 
                   return GestureDetector(
-                    onTap: _isAnswered ? null : () => _checkAnswer(animal.nama), // Nonaktifkan klik setelah dijawab
+                    onTap: _isAnswered ? null : () => _checkAnswer(animal),
                     child: Card(
+                      color: cardColor,
                       elevation: 6,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
-                        side: BorderSide( // Border untuk feedback visual lebih jelas
-                          color: isSelected && _isAnswered // Border setelah dijawab
+                        side: BorderSide(
+                          color: isSelected && _isAnswered
                               ? (animal.nama == _correctAnimal.nama ? Colors.green.shade800 : Colors.red.shade800)
-                              : (isSelected ? Colors.blue.shade800 : Colors.transparent), // Border sebelum dijawab
+                              : (isSelected ? Colors.blue.shade800 : Colors.transparent),
                           width: 3,
                         ),
                       ),
-                      color: cardColor, // Terapkan warna yang sudah ditentukan
                       child: Center(
                         child: Text(
                           animal.nama,
-                          textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,

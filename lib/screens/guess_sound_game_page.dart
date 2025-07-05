@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:zooplay/models/animal.dart';
-import 'package:zooplay/screens/home_page.dart';
 
 class GuessSoundGamePage extends StatefulWidget {
   final List<Animal> animals;
