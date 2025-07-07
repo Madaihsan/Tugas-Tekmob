@@ -144,7 +144,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             child: Column(
                               children: [
                                 CircleAvatar(
-                                  radius: 40,
+                                  radius: 70,
                                   backgroundImage: _userProfile?.avatarPath != null
                                       ? AssetImage(_userProfile!.avatarPath)
                                       : const AssetImage('assets/icon/ikon_profil1.png'),
@@ -167,7 +167,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                           const SizedBox(height: 30),
 
-                          // ✅ Tombol Belajar (di atas)
+                          //  Tombol Belajar
                           BounceInUp(
                             duration: const Duration(milliseconds: 1600),
                             child: AnimatedBuilder(
@@ -192,7 +192,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                           const SizedBox(height: 20),
 
-                          // ✅ Tombol Bermain (di bawah)
+                          //  Tombol Bermain 
                           BounceInUp(
                             duration: const Duration(milliseconds: 1800),
                             child: AnimatedBuilder(

@@ -1,4 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:zooplay/models/animal.dart';
 import 'package:zooplay/screens/animal_gallery_page.dart';
 
@@ -26,6 +29,14 @@ class LearnPage extends StatelessWidget {
         backgroundColor: Colors.lightBlue,
         elevation: 0,
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () async {
+            final sfxPlayer = AudioPlayer();
+            await sfxPlayer.play(AssetSource('soundtrack/backsound_tombol.mp3'));
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -66,7 +77,7 @@ class LearnPage extends StatelessWidget {
 }
 
 // =====================
-// Kartu dengan animasi pulse loop
+// Kartu dengan animasi pulse dan suara pop saat ditekan
 // =====================
 class _PulsingCategoryCard extends StatefulWidget {
   final String title;
@@ -95,7 +106,7 @@ class _PulsingCategoryCardState extends State<_PulsingCategoryCard>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    )..repeat(reverse: true); // Animasi bolak-balik
+    )..repeat(reverse: true);
 
     _pulseAnimation = Tween<double>(begin: 0.98, end: 1.05).animate(
       CurvedAnimation(
@@ -111,7 +122,10 @@ class _PulsingCategoryCardState extends State<_PulsingCategoryCard>
     super.dispose();
   }
 
-  void _navigateToGallery() {
+  Future<void> _navigateToGalleryWithSound() async {
+    final sfxPlayer = AudioPlayer();
+    await sfxPlayer.play(AssetSource('soundtrack/backsound_tombol.mp3'));
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -128,7 +142,7 @@ class _PulsingCategoryCardState extends State<_PulsingCategoryCard>
     return ScaleTransition(
       scale: _pulseAnimation,
       child: GestureDetector(
-        onTap: _navigateToGallery,
+        onTap: _navigateToGalleryWithSound,
         child: AspectRatio(
           aspectRatio: 16 / 9,
           child: Card(
@@ -139,7 +153,7 @@ class _PulsingCategoryCardState extends State<_PulsingCategoryCard>
             clipBehavior: Clip.antiAlias,
             child: Stack(
               children: [
-                // Gambar
+                // Gambar kategori
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: Image.asset(
@@ -149,7 +163,7 @@ class _PulsingCategoryCardState extends State<_PulsingCategoryCard>
                     height: double.infinity,
                   ),
                 ),
-                // Overlay teks
+                // Teks overlay
                 Positioned(
                   bottom: 0,
                   left: 0,

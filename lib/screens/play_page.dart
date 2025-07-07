@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:zooplay/models/animal.dart';
 import 'package:zooplay/screens/guess_sound_game_page.dart';
 import 'package:zooplay/screens/guess_name_game_page.dart';
@@ -39,7 +40,7 @@ class PlayPage extends StatelessWidget {
             children: [
               _buildGameImageButton(
                 context,
-                'assets/icon/icon_tebak_suara.png', // Path to the "Tebak Suara" image
+                'assets/icon/icon_tebak_suara.png',
                 screenSize,
                 () {
                   Navigator.push(
@@ -50,11 +51,10 @@ class PlayPage extends StatelessWidget {
                   );
                 },
               ),
-              // Menggunakan SizedBox untuk spasi vertikal
-              SizedBox(height: screenSize.height * 0.05), // Increased spacing for visual separation
+              SizedBox(height: screenSize.height * 0.05),
               _buildGameImageButton(
                 context,
-                'assets/icon/icon_tebak_nama.png', // Path to the "Tebak Nama" image
+                'assets/icon/icon_tebak_nama.png',
                 screenSize,
                 () {
                   Navigator.push(
@@ -76,20 +76,23 @@ class PlayPage extends StatelessWidget {
     BuildContext context,
     String imagePath,
     Size screenSize,
-    VoidCallback onTap,
+    VoidCallback onNavigate,
   ) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () async {
+        final player = AudioPlayer();
+        await player.play(AssetSource('soundtrack/backsound_tombol.mp3'));
+        await Future.delayed(const Duration(milliseconds: 300)); // jeda pendek agar suara sempat terdengar
+        onNavigate();
+      },
       child: Container(
-        // You can adjust the padding to control the size of the image relative to the screen
-        // This makes the image itself act as the primary visual element
-        padding: const EdgeInsets.symmetric(horizontal: 20.0), // Add horizontal padding
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20.0), // Apply some corner radius to the image itself
+          borderRadius: BorderRadius.circular(20.0),
           child: Image.asset(
             imagePath,
-            width: screenSize.width * 0.7, // Adjust width as a percentage of screen width
-            fit: BoxFit.contain, // Ensures the image fits within the bounds without cropping
+            width: screenSize.width * 0.7,
+            fit: BoxFit.contain,
           ),
         ),
       ),
