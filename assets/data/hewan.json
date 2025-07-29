@@ -1,62 +1,41 @@
 {
   "darat": [
-    {
-      "nama": "Gajah",
-      "gambar": "assets/images/darat/gambar_gajah.png",
-      "suara": "assets/sounds/darat/sound_gajah.mp3",
-      "suara_nama": "assets/sounds/darat/suara_nama_gajah.mp3"
-    },
-    {
-      "nama": "Kucing",
-      "gambar": "assets/images/darat/gambar_kucing.png",
-      "suara": "assets/sounds/darat/sound_kucing.mp3",
-      "suara_nama": "assets/sounds/darat/suara_nama_kucing.mp3"
-    },
-    {
-      "nama": "Kuda",
-      "gambar": "assets/images/darat/gambar_kuda.png",
-      "suara": "assets/sounds/darat/sound_kuda.mp3",
-      "suara_nama": "assets/sounds/darat/suara_nama_kuda.mp3"
-    }
+    { "nama": "Angsa", "gambar": "assets/images/darat/gambar_angsa.png", "suara": "", "suara_nama": "assets/sounds/darat/suara_nama_angsa.mp3" },
+    { "nama": "Anjing", "gambar": "assets/images/darat/gambar_anjing.png", "suara": "assets/sounds/darat/sound_anjing.mp3", "suara_nama": "assets/sounds/darat/suara_nama_anjing.mp3" },
+    { "nama": "Ayam Betina", "gambar": "assets/images/darat/gambar_ayambetina.png", "suara": "assets/sounds/darat/sound_ayambetina.mp3", "suara_nama": "assets/sounds/darat/suara_nama_ayambetina.mp3" },
+    { "nama": "Babi", "gambar": "assets/images/darat/gambar_babi.png", "suara": "assets/sounds/darat/sound_babi.mp3", "suara_nama": "assets/sounds/darat/suara_nama_babi.mp3" },
+    { "nama": "Beruang", "gambar": "assets/images/darat/gambar_beruang.png", "suara": "assets/sounds/darat/sound_beruang.mp3", "suara_nama": "assets/sounds/darat/suara_nama_beruang.mp3" },
+    { "nama": "Cicak", "gambar": "assets/images/darat/gambar_cicak.png", "suara": "assets/sounds/darat/sound_cicak.mp3", "suara_nama": "assets/sounds/darat/suara_nama_cicak.mp3" },
+    { "nama": "Domba", "gambar": "assets/images/darat/gambar_domba.png", "suara": "assets/sounds/darat/sound_domba.mp3", "suara_nama": "assets/sounds/darat/suara_nama_domba.mp3" },
+    { "nama": "Gajah", "gambar": "assets/images/darat/gambar_gajah.png", "suara": "assets/sounds/darat/sound_gajah.mp3", "suara_nama": "assets/sounds/darat/suara_nama_gajah.mp3" },
+    { "nama": "Jangkrik", "gambar": "assets/images/darat/gambar_jangkrik.png", "suara": "", "suara_nama": "assets/sounds/darat/suara_nama_jangkrik.mp3" },
+    { "nama": "Kucing", "gambar": "assets/images/darat/gambar_kucing.png", "suara": "assets/sounds/darat/sound_kucing.mp3", "suara_nama": "assets/sounds/darat/suara_nama_kucing.mp3" },
+    { "nama": "Kuda", "gambar": "assets/images/darat/gambar_kuda.png", "suara": "assets/sounds/darat/sound_kuda.mp3", "suara_nama": "assets/sounds/darat/suara_nama_kuda.mp3" },
+    { "nama": "Monyet", "gambar": "assets/images/darat/gambar_monyet.png", "suara": "assets/sounds/darat/sound_monyet.mp3", "suara_nama": "assets/sounds/darat/suara_nama_monyet.mp3" },
+    { "nama": "Sapi", "gambar": "assets/images/darat/gambar_sapi.png", "suara": "assets/sounds/darat/sound_sapi.mp3", "suara_nama": "assets/sounds/darat/suara_nama_sapi.mp3" },
+    { "nama": "Singa", "gambar": "assets/images/darat/gambar_singa.png", "suara": "assets/sounds/darat/sound_singa.mp3", "suara_nama": "assets/sounds/darat/suara_nama_singa.mp3" },
+    { "nama": "Tikus", "gambar": "assets/images/darat/gambar_tikus.png", "suara": "assets/sounds/darat/sound_tikus.mp3", "suara_nama": "assets/sounds/darat/suara_nama_tikus.mp3" }
   ],
   "air": [
-    {
-      "nama": "Anjing Laut",
-      "gambar": "assets/images/air/gambar_anjinglaut.png",
-      "suara": "",
-      "suara_nama": "assets/sounds/air/suara_nama_anjinglaut.mp3"
-    },
-    {
-      "nama": "Cacing Laut",
-      "gambar": "assets/images/air/gambar_cacinglaut.png",
-      "suara": "",
-      "suara_nama": "assets/sounds/air/suara_nama_cacinglaut.mp3"
-    },
-    {
-      "nama": "Ikan Pari",
-      "gambar": "assets/images/air/gambar_ikanpari.png",
-      "suara": "",
-      "suara_nama": "assets/sounds/air/suara_nama_ikanpari.mp3"
-    }
+    { "nama": "Anjing Laut", "gambar": "assets/images/air/gambar_anjinglaut.png", "suara": "", "suara_nama": "assets/sounds/air/suara_nama_anjinglaut.mp3" },
+    { "nama": "Cacing Laut", "gambar": "assets/images/air/gambar_cacinglaut.png", "suara": "", "suara_nama": "assets/sounds/air/suara_nama_cacinglaut.mp3" },
+    { "nama": "Ikan Pari", "gambar": "assets/images/air/gambar_ikanpari.png", "suara": "", "suara_nama": "assets/sounds/air/suara_nama_ikanpari.mp3" },
+    { "nama": "Lumba-lumba", "gambar": "assets/images/air/gambar_lumbalumba.png", "suara": "", "suara_nama": "assets/sounds/air/suara_nama_lumbalumba.mp3" },
+    { "nama": "Paus", "gambar": "assets/images/air/gambar_paus.png", "suara": "", "suara_nama": "assets/sounds/air/suara_nama_paus.mp3" },
+    { "nama": "Singa Laut", "gambar": "assets/images/air/gambar_singalaut.png", "suara": "", "suara_nama": "assets/sounds/air/suara_nama_singalaut.mp3" },
+    { "nama": "Udang Pistol", "gambar": "assets/images/air/gambar_udangpistol.png", "suara": "", "suara_nama": "assets/sounds/air/suara_nama_udangpistol.mp3" }
   ],
   "udara": [
-    {
-      "nama": "Beo",
-      "gambar": "assets/images/udara/gambar_beo.png",
-      "suara": "assets/sounds/udara/sound_beo.mp3",
-      "suara_nama": "assets/sounds/udara/suara_nama_beo.mp3"
-    },
-    {
-      "nama": "Burung Hantu",
-      "gambar": "assets/images/udara/gambar_burunghantu.png",
-      "suara": "assets/sounds/udara/sound_burunghantu.mp3",
-      "suara_nama": "assets/sounds/udara/suara_nama_burunghantu.mp3"
-    },
-    {
-      "nama": "Lalat",
-      "gambar": "assets/images/udara/gambar_lalat.png",
-      "suara": "assets/sounds/udara/sound_lalat.mp3",
-      "suara_nama": "assets/sounds/udara/suara_nama_lalat.mp3"
-    }
+    { "nama": "Bangau", "gambar": "assets/images/udara/gambar_bangau.png", "suara": "assets/sounds/udara/sound_bangau.mp3", "suara_nama": "assets/sounds/udara/suara_nama_bangau.mp3" },
+    { "nama": "Beo", "gambar": "assets/images/udara/gambar_beo.png", "suara": "assets/sounds/udara/sound_beo.mp3", "suara_nama": "assets/sounds/udara/suara_nama_beo.mp3" },
+    { "nama": "Burung Hantu", "gambar": "assets/images/udara/gambar_burunghantu.png", "suara": "assets/sounds/udara/sound_burunghantu.mp3", "suara_nama": "assets/sounds/udara/suara_nama_burunghantu.mp3" },
+    { "nama": "Burung Pipit", "gambar": "assets/images/udara/gambar_burungpipit.png", "suara": "assets/sounds/udara/sound_burungpipit.mp3", "suara_nama": "assets/sounds/udara/suara_nama_burungpipit.mp3" },
+    { "nama": "Elang", "gambar": "assets/images/udara/gambar_elang.png", "suara": "assets/sounds/udara/sound_elang.mp3", "suara_nama": "assets/sounds/udara/suara_nama_elang.mp3" },
+    { "nama": "Gagak", "gambar": "assets/images/udara/gambar_gagak.png", "suara": "assets/sounds/udara/sound_gagak.mp3", "suara_nama": "assets/sounds/udara/suara_nama_gagak.mp3" },
+    { "nama": "Kelelawar", "gambar": "assets/images/udara/gambar_kelelawar.png", "suara": "assets/sounds/udara/sound_kelelawar.mp3", "suara_nama": "assets/sounds/udara/suara_nama_kelelawar.mp3" },
+    { "nama": "Lalat", "gambar": "assets/images/udara/gambar_lalat.png", "suara": "assets/sounds/udara/sound_lalat.mp3", "suara_nama": "assets/sounds/udara/suara_nama_lalat.mp3" },
+    { "nama": "Lebah", "gambar": "assets/images/udara/gambar_lebah.png", "suara": "assets/sounds/udara/sound_lebah.mp3", "suara_nama": "assets/sounds/udara/suara_nama_lebah.mp3" },
+    { "nama": "Nyamuk", "gambar": "assets/images/udara/gambar_nyamuk.png", "suara": "assets/sounds/udara/sound_nyamuk.mp3", "suara_nama": "assets/sounds/udara/suara_nama_nyamuk.mp3" },
+    { "nama": "Tonggeret", "gambar": "assets/images/udara/gambar_tonggeret.png", "suara": "assets/sounds/udara/sound_tonggeret.mp3", "suara_nama": "assets/sounds/udara/suara_nama_tonggeret.mp3" }
   ]
 }

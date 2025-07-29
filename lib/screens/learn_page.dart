@@ -1,4 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:zooplay/models/animal.dart';
 import 'package:zooplay/screens/animal_gallery_page.dart';
 
@@ -6,7 +9,7 @@ class LearnPage extends StatelessWidget {
   final AnimalData animalData;
 
   const LearnPage({
-    super.key, // Menambahkan super.key untuk menghilangkan warning
+    super.key,
     required this.animalData,
   });
 
@@ -26,6 +29,14 @@ class LearnPage extends StatelessWidget {
         backgroundColor: Colors.lightBlue,
         elevation: 0,
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () async {
+            final sfxPlayer = AudioPlayer();
+            await sfxPlayer.play(AssetSource('soundtrack/backsound_tombol.mp3'));
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -37,117 +48,158 @@ class LearnPage extends StatelessWidget {
         ),
         child: ListView(
           padding: EdgeInsets.symmetric(
-              vertical: screenSize.height * 0.05,
-              horizontal: screenSize.width * 0.05),
+            vertical: screenSize.height * 0.05,
+            horizontal: screenSize.width * 0.05,
+          ),
           children: [
-            _buildCategoryCard(
-              context,
-              'Darat',
-              'assets/icon/icon_darat.png',
-              animalData.darat,
-              screenSize,
+            _PulsingCategoryCard(
+              title: 'Darat',
+              imagePath: 'assets/icon/icon_darat.png',
+              animals: animalData.darat,
             ),
-            SizedBox(height: screenSize.height * 0.03),
-            _buildCategoryCard(
-              context,
-              'Air',
-              'assets/icon/icon_air.png',
-              animalData.air,
-              screenSize,
+            const SizedBox(height: 20),
+            _PulsingCategoryCard(
+              title: 'Air',
+              imagePath: 'assets/icon/icon_air.png',
+              animals: animalData.air,
             ),
-            SizedBox(height: screenSize.height * 0.03),
-            _buildCategoryCard(
-              context,
-              'Udara',
-              'assets/icon/icon_udara.png',
-              animalData.udara,
-              screenSize,
+            const SizedBox(height: 20),
+            _PulsingCategoryCard(
+              title: 'Udara',
+              imagePath: 'assets/icon/icon_udara.png',
+              animals: animalData.udara,
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildCategoryCard(
-    BuildContext context,
-    String title,
-    String imagePath,
-    List<Animal> animals,
-    Size screenSize,
-  ) {
-    double cardWidth = screenSize.width * 0.8;
-    double cardHeight = screenSize.height * 0.25;
-    // double imageHeight = cardHeight * 0.7; // Variabel ini tidak digunakan, bisa dihapus
-    double textBgHeight = cardHeight * 0.3;
+// =====================
+// Kartu dengan animasi pulse dan suara pop saat ditekan
+// =====================
+class _PulsingCategoryCard extends StatefulWidget {
+  final String title;
+  final String imagePath;
+  final List<Animal> animals;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AnimalGalleryPage(
-              categoryTitle: title,
-              animals: animals,
-            ),
-          ),
-        );
-      },
-      child: Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+  const _PulsingCategoryCard({
+    required this.title,
+    required this.imagePath,
+    required this.animals,
+  });
+
+  @override
+  State<_PulsingCategoryCard> createState() => _PulsingCategoryCardState();
+}
+
+class _PulsingCategoryCardState extends State<_PulsingCategoryCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 0.98, end: 1.05).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _navigateToGalleryWithSound() async {
+    final sfxPlayer = AudioPlayer();
+    await sfxPlayer.play(AssetSource('soundtrack/backsound_tombol.mp3'));
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AnimalGalleryPage(
+          categoryTitle: widget.title,
+          animals: widget.animals,
         ),
-        clipBehavior: Clip.antiAlias,
-        child: Container(
-          width: cardWidth,
-          height: cardHeight,
-          decoration: const BoxDecoration(
-            // Tidak ada dekorasi langsung di Container ini karena akan diisi oleh Image.asset
-          ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: textBgHeight,
-                  decoration: BoxDecoration(
-                    // Menggunakan Colors.black.withAlpha() atau Color.fromRGBO() sebagai pengganti withOpacity yang deprecated
-                    color: Colors.black.withAlpha((0.6 * 255).round()), // Alpha 0-255
-                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        '(${animals.length} hewan)',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _pulseAnimation,
+      child: GestureDetector(
+        onTap: _navigateToGalleryWithSound,
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: [
+                // Gambar kategori
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    widget.imagePath,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
                   ),
                 ),
-              ),
-            ],
+                // Teks overlay
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha((0.6 * 255).round()),
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(20),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.title,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          '(${widget.animals.length} hewan)',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zooplay/screens/home_page.dart'; // Impor HomePage Anda
+import 'package:zooplay/screens/splash_screen.dart'; // Ganti path jika berbeda
 
 void main() {
   runApp(const MyApp());
@@ -11,12 +11,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Zooplay', // Nama aplikasi
+      title: 'ZooPlay',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue, // Tema warna dasar aplikasi
+        primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        useMaterial3: false, // Gunakan Material 2 agar konsisten jika UI kamu pakai AppBar lama
       ),
-      home: const HomePage(), // Set HomePage sebagai halaman awal
+      home: const SplashScreen(), // Ganti dari HomePage ke SplashScreen
     );
   }
 }

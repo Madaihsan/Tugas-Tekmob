@@ -27,48 +27,30 @@ class _AnimalGalleryPageState extends State<AnimalGalleryPage> {
   }
 
   Future<void> _playAnimalSound(String soundPath, String soundNamePath) async {
-    developer.log('Attempting to play sound name (original): $soundNamePath', name: 'AudioDebug');
-    developer.log('Attempting to play animal sound (original): $soundPath', name: 'AudioDebug');
+    developer.log('Attempting to play sound name: $soundNamePath', name: 'AudioDebug');
+    developer.log('Attempting to play animal sound: $soundPath', name: 'AudioDebug');
 
-    // **Perubahan di sini:** Hapus prefiks 'assets/' dari path
-    final String cleanedSoundNamePath = soundNamePath.replaceFirst('assets/', '');
-    final String cleanedSoundPath = soundPath.replaceFirst('assets/', '');
-
-    developer.log('Attempting to play sound name (cleaned): $cleanedSoundNamePath', name: 'AudioDebug');
-    developer.log('Attempting to play animal sound (cleaned): $cleanedSoundPath', name: 'AudioDebug');
-
+    final String cleanedName = soundNamePath.replaceFirst('assets/', '');
+    final String cleanedSound = soundPath.replaceFirst('assets/', '');
 
     await _audioPlayer.stop();
 
     try {
-      // Putar suara nama hewan terlebih dahulu
-      await _audioPlayer.play(AssetSource(cleanedSoundNamePath));
-      developer.log('Played sound name: $cleanedSoundNamePath', name: 'AudioDebug');
-
-      // Tunggu hingga suara nama hewan selesai diputar
+      await _audioPlayer.play(AssetSource(cleanedName));
       await _audioPlayer.onPlayerComplete.first;
 
-      // Jika ada suara hewan (tidak kosong), putar suara hewan
-      if (cleanedSoundPath.isNotEmpty) {
-        await _audioPlayer.play(AssetSource(cleanedSoundPath));
-        developer.log('Played animal sound: $cleanedSoundPath', name: 'AudioDebug');
-      } else {
-        developer.log('Animal sound path is empty, skipping.', name: 'AudioDebug');
+      if (cleanedSound.isNotEmpty) {
+        await _audioPlayer.play(AssetSource(cleanedSound));
       }
-    } catch (e, stackTrace) {
-      if (!mounted) {
-        developer.log('Widget is not mounted, cannot show SnackBar.', name: 'AudioError');
-        return;
-      }
-
-      developer.log('Error playing audio: $e', name: 'AudioError', error: e, stackTrace: stackTrace);
-      
+    } catch (e, stack) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Gagal memutar audio: ${e.toString().split(':')[0]}'),
           backgroundColor: Colors.red,
         ),
       );
+      developer.log('Audio error', name: 'AudioError', error: e, stackTrace: stack);
     }
   }
 
@@ -78,10 +60,7 @@ class _AnimalGalleryPageState extends State<AnimalGalleryPage> {
       appBar: AppBar(
         title: Text(
           'Hewan ${widget.categoryTitle}',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.lightBlue,
         elevation: 0,
@@ -105,7 +84,7 @@ class _AnimalGalleryPageState extends State<AnimalGalleryPage> {
           ),
           itemCount: widget.animals.length,
           itemBuilder: (context, index) {
-            final Animal animal = widget.animals[index];
+            final animal = widget.animals[index];
             return _AnimatedAnimalCard(
               key: ValueKey(animal.nama),
               animal: animal,
@@ -118,7 +97,6 @@ class _AnimalGalleryPageState extends State<AnimalGalleryPage> {
   }
 }
 
-// Widget terpisah untuk Kartu Hewan dengan Animasi Sendiri
 class _AnimatedAnimalCard extends StatefulWidget {
   final Animal animal;
   final VoidCallback onTap;
@@ -135,60 +113,67 @@ class _AnimatedAnimalCard extends StatefulWidget {
 
 class _AnimatedAnimalCardState extends State<_AnimatedAnimalCard>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+  late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+  bool _isTapped = false;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
+
+    _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
 
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutCubic,
-      ),
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
 
-    _animationController.addStatusListener((status) {
+    _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        _animationController.reverse();
+        _controller.reverse();
+        setState(() => _isTapped = false); // Reset background
       }
     });
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _controller.dispose();
     super.dispose();
+  }
+
+  void _handleTap() {
+    setState(() => _isTapped = true);
+    _controller.forward(from: 0.0);
+    widget.onTap();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        widget.onTap();
-        _animationController.forward(from: 0.0);
-      },
-      child: ScaleTransition(
-        scale: _scaleAnimation,
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTap: _handleTap,
         child: Card(
           elevation: 6,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
+          color: _isTapped ? Colors.orange.shade100 : Colors.white,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: Image.asset(
-                    widget.animal.gambar,
-                    fit: BoxFit.cover,
+                  child: Container(
+                    color: Colors.white,
+                    child: Image.asset(
+                      widget.animal.gambar,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ),
