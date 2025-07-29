@@ -16,6 +16,9 @@ class GuessNameGamePage extends StatefulWidget {
 class _GuessNameGamePageState extends State<GuessNameGamePage> {
   final AudioPlayer _voicePlayer = AudioPlayer();
   final AudioPlayer _feedbackPlayer = AudioPlayer();
+  // TAMBAHKAN INI: Player khusus untuk suara pertanyaan
+  final AudioPlayer _questionPlayer = AudioPlayer();
+
 
   List<Animal> _questionAnimals = [];
   late Animal _correctAnimal;
@@ -30,6 +33,9 @@ class _GuessNameGamePageState extends State<GuessNameGamePage> {
     super.initState();
     _voicePlayer.setReleaseMode(ReleaseMode.stop);
     _feedbackPlayer.setReleaseMode(ReleaseMode.stop);
+    // TAMBAHKAN INI: Set release mode untuk player baru
+    _questionPlayer.setReleaseMode(ReleaseMode.stop);
+
     _startNewRound();
   }
 
@@ -37,14 +43,30 @@ class _GuessNameGamePageState extends State<GuessNameGamePage> {
   void dispose() {
     _voicePlayer.dispose();
     _feedbackPlayer.dispose();
+    // TAMBAHKAN INI: Jangan lupa dispose player baru
+    _questionPlayer.dispose();
     super.dispose();
   }
+
+  // TAMBAHKAN INI: Fungsi baru untuk memutar suara pertanyaan
+  Future<void> _playQuestionSound() async {
+    try {
+      await _questionPlayer.stop();
+      await _questionPlayer.play(AssetSource('soundtrack/suara_pertanyaan_nama_hewan.mp3'));
+    } catch (e) {
+      developer.log('Gagal memutar suara pertanyaan: $e', name: 'GuessNameGamePage');
+    }
+  }
+
 
   void _startNewRound() {
     if (_currentQuestion >= 5) {
       _showResultDialog();
       return;
     }
+
+    // MODIFIKASI INI: Panggil fungsi suara pertanyaan di awal ronde
+    _playQuestionSound();
 
     setState(() {
       _selectedAnswerAnimalName = null;
@@ -93,6 +115,10 @@ class _GuessNameGamePageState extends State<GuessNameGamePage> {
 
   void _checkAnswer(Animal selectedAnimal) async {
     if (_isAnswered) return;
+
+    // TAMBAHKAN INI: Hentikan suara pertanyaan jika masih berbunyi
+    await _questionPlayer.stop();
+
 
     setState(() {
       _selectedAnswerAnimalName = selectedAnimal.nama;
@@ -192,7 +218,7 @@ class _GuessNameGamePageState extends State<GuessNameGamePage> {
             const Padding(
               padding: EdgeInsets.all(10.0),
               child: Text(
-                'Nama hewan apa ini?',
+                'Apa nama hewan ini?',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,

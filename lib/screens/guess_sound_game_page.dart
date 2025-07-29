@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:developer' as developer; // Import developer log
 import 'package:audioplayers/audioplayers.dart';
 import 'package:zooplay/models/animal.dart';
 
@@ -13,6 +14,8 @@ class GuessSoundGamePage extends StatefulWidget {
 }
 
 class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
+  // --- PERUBAHAN: Tambah player untuk suara intro pertanyaan ---
+  final AudioPlayer _introPlayer = AudioPlayer();
   final AudioPlayer _questionPlayer = AudioPlayer();
   final AudioPlayer _namePlayer = AudioPlayer();
   final AudioPlayer _feedbackPlayer = AudioPlayer();
@@ -29,19 +32,36 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
   @override
   void initState() {
     super.initState();
+    // --- PERUBAHAN: Set release mode untuk player baru ---
+    _introPlayer.setReleaseMode(ReleaseMode.stop);
     _startNewRound();
   }
 
   @override
   void dispose() {
+    // --- PERUBAHAN: Dispose player baru ---
+    _introPlayer.dispose();
     _questionPlayer.dispose();
     _namePlayer.dispose();
     _feedbackPlayer.dispose();
     super.dispose();
   }
+  
+  // --- PERUBAHAN: Fungsi baru untuk memutar suara intro ---
+  Future<void> _playIntroSound() async {
+    try {
+      await _introPlayer.stop();
+      await _introPlayer.play(AssetSource('soundtrack/suara_pertanyaan_tebaksuara_hewan.mp3'));
+    } catch (e) {
+      developer.log('Gagal memutar suara intro: $e', name: 'GuessSoundGamePage');
+    }
+  }
 
   void _startNewRound() async {
     if (!mounted) return;
+
+    // --- PERUBAHAN: Panggil suara intro di awal ronde ---
+    await _playIntroSound();
 
     setState(() {
       _selectedAnswerAnimalName = null;
@@ -61,17 +81,31 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
       _questionAnimals = options;
     });
 
-    await _playSound(_questionPlayer, _correctAnimal.suara);
+    // --- PERUBAHAN: Beri jeda sebelum suara hewan diputar ---
+    await Future.delayed(const Duration(milliseconds: 1800));
+
+    // Pastikan widget masih ada sebelum memutar suara
+    if (mounted && !_isAnswered) {
+      await _playSound(_questionPlayer, _correctAnimal.suara);
+    }
   }
 
   Future<void> _playSound(AudioPlayer player, String assetPath) async {
-    final cleanedPath = assetPath.replaceFirst('assets/', '');
-    await player.stop();
-    await player.play(AssetSource(cleanedPath));
+    try {
+      final cleanedPath = assetPath.replaceFirst('assets/', '');
+      await player.stop();
+      await player.play(AssetSource(cleanedPath));
+    } catch (e) {
+      developer.log('Gagal memutar suara: $e', name: 'GuessSoundGamePage');
+    }
   }
 
   Future<void> _checkAnswer(Animal selectedAnimal) async {
     if (_isAnswered) return;
+
+    // --- PERUBAHAN: Hentikan suara intro & pertanyaan saat jawaban dipilih ---
+    await _introPlayer.stop();
+    await _questionPlayer.stop();
 
     setState(() {
       _selectedAnswerAnimalName = selectedAnimal.nama;
@@ -79,10 +113,15 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
     });
 
     await _playSound(_namePlayer, selectedAnimal.suaraNama);
+    await Future.delayed(const Duration(milliseconds: 1200)); // Beri jeda agar suara nama selesai
 
-    if (selectedAnimal.nama == _correctAnimal.nama) {
+    bool isCorrect = selectedAnimal.nama == _correctAnimal.nama;
+
+    if (isCorrect) {
       _correctCount++;
+      // Mainkan backsound benar dahulu, lalu suara pujian
       await _playSound(_feedbackPlayer, 'soundtrack/backsound_jawaban_benar.mp3');
+      await Future.delayed(const Duration(milliseconds: 1000));
       final positifList = ['benar_hebat.mp3', 'benar_keren.mp3', 'benar_luarbiasa.mp3'];
       await _playSound(_feedbackPlayer, 'soundtrack/${positifList[Random().nextInt(positifList.length)]}');
     } else {
@@ -92,6 +131,8 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
     }
 
     await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
 
     if (_currentQuestion + 1 >= 5) {
       _showResultDialog();
@@ -157,7 +198,7 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
     if (_questionAnimals.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('Tebak Suara')),
-        body: const Center(child: Text('Tidak ada data hewan.')),
+        body: const Center(child: CircularProgressIndicator()), // Tampilkan loading
       );
     }
 
@@ -169,21 +210,27 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
       ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(colors: [Colors.orangeAccent, Colors.deepOrange]),
+          gradient: LinearGradient(
+            colors: [Colors.orangeAccent, Colors.deepOrangeAccent],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter
+          ),
         ),
         child: Column(
           children: [
             const Padding(
               padding: EdgeInsets.all(20),
               child: Text(
-                'Suara hewan apa ini?',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+                'Suara hewan apakah ini?',
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white, shadows: [Shadow(blurRadius: 5.0, color: Colors.black, offset: Offset(2.0, 2.0))]),
                 textAlign: TextAlign.center,
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.volume_up, size: 50, color: Colors.white),
+              icon: const Icon(Icons.volume_up, size: 60, color: Colors.white),
               onPressed: _isAnswered ? null : () => _playSound(_questionPlayer, _correctAnimal.suara),
+              iconSize: 60,
+              splashRadius: 40,
             ),
             Expanded(
               child: GridView.builder(
@@ -192,6 +239,7 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 15,
                   mainAxisSpacing: 15,
+                  childAspectRatio: 0.8, // Sesuaikan rasio agar gambar dan teks pas
                 ),
                 itemCount: _questionAnimals.length,
                 itemBuilder: (context, index) {
@@ -199,11 +247,15 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
                   final isSelected = _selectedAnswerAnimalName == animal.nama;
 
                   Color color = Colors.white;
+                  Color borderColor = Colors.transparent;
+
                   if (_isAnswered) {
                     if (animal.nama == _correctAnimal.nama) {
                       color = Colors.green.shade300;
+                      borderColor = Colors.green.shade800;
                     } else if (isSelected) {
                       color = Colors.red.shade300;
+                      borderColor = Colors.red.shade800;
                     }
                   }
 
@@ -214,13 +266,9 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
                       elevation: 6,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
-                        side: BorderSide(
-                          color: isSelected
-                              ? (animal.nama == _correctAnimal.nama ? Colors.green : Colors.red)
-                              : Colors.transparent,
-                          width: 3,
-                        ),
+                        side: BorderSide(color: borderColor, width: 3),
                       ),
+                      clipBehavior: Clip.antiAlias, // Agar gambar tidak keluar dari border
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -230,12 +278,16 @@ class _GuessSoundGamePageState extends State<GuessSoundGamePage> {
                               child: Image.asset(animal.gambar, fit: BoxFit.contain),
                             ),
                           ),
-                          Text(
-                            animal.nama,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+                            child: Text(
+                              animal.nama,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          const SizedBox(height: 10),
                         ],
                       ),
                     ),
